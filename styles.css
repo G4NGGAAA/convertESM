@@ -46,17 +46,30 @@ body {
 }
 
 .logo {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: linear-gradient(135deg, #00ff88, #0088ff);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 2rem;
   box-shadow: 0 5px 15px var(--shadow-color);
   margin-bottom: 15px;
+  overflow: hidden;
+  border: 3px solid var(--accent-color);
+  transition: all 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 h1 {
@@ -106,11 +119,42 @@ button {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  position: relative;
+  overflow: hidden;
 }
 
 button:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+button:focus:not(:active)::after {
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20);
+    opacity: 0;
+  }
 }
 
 .result-container {
@@ -210,6 +254,25 @@ pre {
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.social-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+.social-btn:hover::before {
+  left: 0;
 }
 
 .whatsapp {
@@ -217,9 +280,17 @@ pre {
   color: white;
 }
 
+.whatsapp:hover {
+  background-color: #128C7E;
+}
+
 .whatsapp-channel {
   background-color: #128C7E;
   color: white;
+}
+
+.whatsapp-channel:hover {
+  background-color: #075E54;
 }
 
 .github {
@@ -227,9 +298,17 @@ pre {
   color: white;
 }
 
+.github:hover {
+  background-color: #24292e;
+}
+
 .social-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+button:active, .social-btn:active {
+  transform: translateY(1px) !important;
 }
 
 @media (max-width: 600px) {
