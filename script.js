@@ -1,13 +1,13 @@
 // Initialize Highlight.js
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
   hljs.highlightAll();
-
+  
   // Theme toggle functionality
   const themeToggle = document.getElementById('themeToggle');
   const body = document.body;
-
-  const savedTheme = localStorage.getItem('theme') ||
-    (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  
+  const savedTheme = localStorage.getItem('theme') || 
+                   (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
   body.setAttribute('data-theme', savedTheme);
   updateThemeIcon(savedTheme);
 
@@ -24,12 +24,12 @@ document.addEventListener('DOMContentLoaded', function () {
     icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
   }
 
-  // ✅ Copy button functionality (dipertahankan)
+  // Copy button functionality
   const copyBtn = document.getElementById('copyBtn');
   copyBtn.addEventListener('click', () => {
     const codeBlock = document.querySelector('#resultBox code');
     const textToCopy = codeBlock.textContent;
-
+    
     navigator.clipboard.writeText(textToCopy).then(() => {
       copyBtn.innerHTML = '<i class="fas fa-check"></i> Disalin!';
       copyBtn.classList.add('copied');
@@ -40,19 +40,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Optional: Profile image hover
+  // Profile image hover effect
   const profileImg = document.querySelector('.profile-img');
   if (profileImg) {
-    profileImg.addEventListener('mouseenter', function () {
+    profileImg.addEventListener('mouseenter', function() {
       this.style.transform = 'scale(1.1)';
     });
-    profileImg.addEventListener('mouseleave', function () {
+    
+    profileImg.addEventListener('mouseleave', function() {
       this.style.transform = 'scale(1)';
     });
   }
 });
 
-// 🔁 Convert ESM → CJS + AI
+// ESM to CJS Converter with AI
 async function convertAndHelpAI() {
   const input = document.getElementById('urlInput').value.trim();
   const resultBox = document.querySelector("#resultBox code");
@@ -62,21 +63,22 @@ async function convertAndHelpAI() {
   const copyBtn = document.getElementById("copyBtn");
 
   if (!input) return alert("Masukkan kode ESM yang valid.");
-
+  
+  // Show loading state
   btnText.style.display = 'none';
-  btnLoader.style.display = 'inline';
+  btnLoader.style.display = 'block';
   actionBtn.disabled = true;
   resultBox.textContent = "⏳ Mengonversi kode...";
   copyBtn.style.display = 'none';
 
   try {
-    // Cek apakah mengandung import/export
+    // Check for ESM syntax
     const isESM = input.includes("import") || input.includes("export");
     if (!isESM) {
       throw new Error("❗ Input tidak terdeteksi sebagai kode ESM.");
     }
 
-    // Proses konversi
+    // Conversion process
     let notice = "🧩 Deteksi kode ESM! Mengonversi ke format CommonJS...\n\n";
     let converted = input
       .replace(/import\s+([a-zA-Z0-9_]+)\s+from\s+['"]([^'"]+)['"];?/g,
@@ -94,7 +96,7 @@ async function convertAndHelpAI() {
     resultBox.textContent = `${notice}✅ Hasil Konversi:\n${converted}\n\n🧠 Meminta penjelasan dari AI...`;
     hljs.highlightElement(resultBox);
 
-    // Kirim ke AI untuk penjelasan
+    // Send to AI for explanation
     const aiRes = await fetch(`https://api.siputzx.my.id/api/ai/gpt3`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -106,12 +108,13 @@ async function convertAndHelpAI() {
 
     resultBox.textContent = `${notice}✅ Hasil Konversi:\n${converted}\n\n🧠 GPT-3 Menjelaskan:\n${aiText}`;
     hljs.highlightElement(resultBox);
-    copyBtn.style.display = 'inline';
+    copyBtn.style.display = 'block';
   } catch (err) {
     resultBox.textContent = "❌ Gagal memproses: " + err.message;
     hljs.highlightElement(resultBox);
   } finally {
-    btnText.style.display = 'inline';
+    // Reset button state
+    btnText.style.display = 'block';
     btnLoader.style.display = 'none';
     actionBtn.disabled = false;
   }
