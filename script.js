@@ -24,63 +24,109 @@ document.addEventListener('DOMContentLoaded', function() {
     icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
   }
 
-  // Copy button functionality
-  const copyBtn = document.getElementById('copyBtn');
-  copyBtn.addEventListener('click', () => {
-    const codeBlock = document.querySelector('#resultBox code');
-    const textToCopy = codeBlock.textContent;
-    
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      copyBtn.innerHTML = '<i class="fas fa-check"></i> Disalin!';
-      copyBtn.classList.add('copied');
-      setTimeout(() => {
-        copyBtn.innerHTML = '<i class="far fa-copy"></i> Salin';
-        copyBtn.classList.remove('copied');
-      }, 2000);
-    });
+  // Copy button functionality (updated for multiple results)
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('copy-btn') {
+      const resultContent = e.target.closest('.result-item').querySelector('.result-content');
+      const textToCopy = resultContent.textContent;
+      
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalText = e.target.innerHTML;
+        e.target.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+          e.target.innerHTML = originalText;
+        }, 2000);
+      });
+    }
   });
 
-  // Profile image hover effect
-  const profileImg = document.querySelector('.profile-img');
-  if (profileImg) {
-    profileImg.addEventListener('mouseenter', function() {
-      this.style.transform = 'scale(1.1)';
-    });
-    
-    profileImg.addEventListener('mouseleave', function() {
-      this.style.transform = 'scale(1)';
-    });
-  }
+  // Auto-resize textarea
+  const textarea = document.getElementById('urlInput');
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+  });
 });
 
-// ESM to CJS Converter with AI
-async function convertAndHelpAI() {
+// Process multiple URLs
+async function processMultipleUrls() {
   const input = document.getElementById('urlInput').value.trim();
-  const resultBox = document.querySelector("#resultBox code");
+  const resultsContainer = document.getElementById('resultsContainer') || createResultsContainer();
   const actionBtn = document.getElementById("actionBtn");
   const btnText = document.getElementById("btnText");
   const btnLoader = document.getElementById("btnLoader");
-  const copyBtn = document.getElementById("copyBtn");
 
-  if (!input) return alert("Masukkan kode ESM yang valid.");
+  if (!input) return alert("Please enter valid ESM code(s)");
   
   // Show loading state
   btnText.style.display = 'none';
   btnLoader.style.display = 'block';
   actionBtn.disabled = true;
-  resultBox.textContent = "⏳ Mengonversi kode...";
-  copyBtn.style.display = 'none';
+  resultsContainer.innerHTML = '<div class="result-item"><div class="result-content">Processing...</div></div>';
 
   try {
+    // Clear previous results
+    resultsContainer.innerHTML = '';
+    
+    // Split by lines and process each
+    const codeBlocks = input.split('\n').filter(block => block.trim());
+    
+    for (const [index, code] of codeBlocks.entries()) {
+      const resultItem = document.createElement('div');
+      resultItem.className = 'result-item';
+      
+      const header = document.createElement('div');
+      header.className = 'result-header';
+      header.innerHTML = `
+        <span>Result #${index + 1}</span>
+        <button class="copy-btn"><i class="far fa-copy"></i> Copy</button>
+      `;
+      
+      const content = document.createElement('div');
+      content.className = 'result-content';
+      content.textContent = "Processing...";
+      
+      resultItem.appendChild(header);
+      resultItem.appendChild(content);
+      resultsContainer.appendChild(resultItem);
+      
+      // Process each code block
+      await processSingleCode(code, content);
+    }
+  } catch (err) {
+    const errorItem = document.createElement('div');
+    errorItem.className = 'result-item';
+    errorItem.innerHTML = `
+      <div class="result-header">Error</div>
+      <div class="result-content">${err.message}</div>
+    `;
+    resultsContainer.appendChild(errorItem);
+  } finally {
+    btnText.style.display = 'block';
+    btnLoader.style.display = 'none';
+    actionBtn.disabled = false;
+    hljs.highlightAll();
+  }
+}
+
+function createResultsContainer() {
+  const container = document.createElement('div');
+  container.id = 'resultsContainer';
+  container.className = 'scrollable-results';
+  document.querySelector('.result-container').appendChild(container);
+  return container;
+}
+
+async function processSingleCode(code, element) {
+  try {
     // Check for ESM syntax
-    const isESM = input.includes("import") || input.includes("export");
+    const isESM = code.includes("import") || code.includes("export");
     if (!isESM) {
-      throw new Error("❗ Input tidak terdeteksi sebagai kode ESM.");
+      throw new Error("Not ESM code");
     }
 
     // Conversion process
-    let notice = "🧩 Deteksi kode ESM! Mengonversi ke format CommonJS...\n\n";
-    let converted = input
+    let converted = code
       .replace(/import\s+([a-zA-Z0-9_]+)\s+from\s+['"]([^'"]+)['"];?/g,
         "const $1 = require('$2');")
       .replace(/import\s+\{\s*([^}]+)\s*\}\s+from\s+['"]([^'"]+)['"];?/g,
@@ -93,29 +139,21 @@ async function convertAndHelpAI() {
         }).join('\n');
       });
 
-    resultBox.textContent = `${notice}✅ Hasil Konversi:\n${converted}\n\n🧠 Meminta penjelasan dari AI...`;
-    hljs.highlightElement(resultBox);
-
-    // Send to AI for explanation
+    element.textContent = converted;
+    
+    // Get AI explanation (optional)
     const aiRes = await fetch(`https://api.siputzx.my.id/api/ai/gpt3`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: converted })
     });
-
+    
     const aiData = await aiRes.json();
-    const aiText = aiData.answer || aiData.result || "⚠️ Tidak ada balasan dari AI.";
-
-    resultBox.textContent = `${notice}✅ Hasil Konversi:\n${converted}\n\n🧠 GPT-3 Menjelaskan:\n${aiText}`;
-    hljs.highlightElement(resultBox);
-    copyBtn.style.display = 'block';
+    const aiText = aiData.answer || aiData.result || "No AI explanation available";
+    
+    element.textContent = `${converted}\n\n/* AI Explanation */\n${aiText}`;
+    
   } catch (err) {
-    resultBox.textContent = "❌ Gagal memproses: " + err.message;
-    hljs.highlightElement(resultBox);
-  } finally {
-    // Reset button state
-    btnText.style.display = 'block';
-    btnLoader.style.display = 'none';
-    actionBtn.disabled = false;
+    element.textContent = `Error processing code:\n${err.message}\n\nOriginal code:\n${code}`;
   }
 }
