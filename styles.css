@@ -113,6 +113,61 @@ input:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.2);
 }
 
+.input-container {
+  margin: 15px 0;
+  position: relative;
+}
+
+#urlInput {
+  width: 100%;
+  min-height: 100px;
+  max-height: 200px;
+  padding: 15px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--accent-color);
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+.scrollable-results {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 15px;
+  border: 1px solid var(--code-border);
+  border-radius: 8px;
+}
+
+.result-item {
+  padding: 15px;
+  border-bottom: 1px solid var(--code-border);
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+.result-content {
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  background: var(--pre-bg);
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
 [data-theme="light"] input:focus, 
 [data-theme="light"] textarea:focus {
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
