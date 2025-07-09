@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
     icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
   }
 
-  // Copy button functionality
+  // ✅ Copy button functionality (dipertahankan)
   const copyBtn = document.getElementById('copyBtn');
   copyBtn.addEventListener('click', () => {
     const codeBlock = document.querySelector('#resultBox code');
@@ -40,19 +40,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Profile image hover effect
+  // Optional: Profile image hover
   const profileImg = document.querySelector('.profile-img');
   if (profileImg) {
     profileImg.addEventListener('mouseenter', function () {
       this.style.transform = 'scale(1.1)';
     });
-
     profileImg.addEventListener('mouseleave', function () {
       this.style.transform = 'scale(1)';
     });
   }
 });
 
+// 🔁 Convert ESM → CJS + AI
 async function convertAndHelpAI() {
   const input = document.getElementById('urlInput').value.trim();
   const resultBox = document.querySelector("#resultBox code");
@@ -64,14 +64,21 @@ async function convertAndHelpAI() {
   if (!input) return alert("Masukkan kode ESM yang valid.");
 
   btnText.style.display = 'none';
-  btnLoader.style.display = 'block';
+  btnLoader.style.display = 'inline';
   actionBtn.disabled = true;
   resultBox.textContent = "⏳ Mengonversi kode...";
   copyBtn.style.display = 'none';
 
   try {
+    // Cek apakah mengandung import/export
+    const isESM = input.includes("import") || input.includes("export");
+    if (!isESM) {
+      throw new Error("❗ Input tidak terdeteksi sebagai kode ESM.");
+    }
+
+    // Proses konversi
     let notice = "🧩 Deteksi kode ESM! Mengonversi ke format CommonJS...\n\n";
-    let convertedText = input
+    let converted = input
       .replace(/import\s+([a-zA-Z0-9_]+)\s+from\s+['"]([^'"]+)['"];?/g,
         "const $1 = require('$2');")
       .replace(/import\s+\{\s*([^}]+)\s*\}\s+from\s+['"]([^'"]+)['"];?/g,
@@ -84,26 +91,27 @@ async function convertAndHelpAI() {
         }).join('\n');
       });
 
-    resultBox.textContent = `${notice}✅ Hasil Konversi:\n${convertedText}\n\n🧠 Meminta penjelasan dari AI...`;
+    resultBox.textContent = `${notice}✅ Hasil Konversi:\n${converted}\n\n🧠 Meminta penjelasan dari AI...`;
     hljs.highlightElement(resultBox);
 
+    // Kirim ke AI untuk penjelasan
     const aiRes = await fetch(`https://api.siputzx.my.id/api/ai/gpt3`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: convertedText })
+      body: JSON.stringify({ text: converted })
     });
 
     const aiData = await aiRes.json();
     const aiText = aiData.answer || aiData.result || "⚠️ Tidak ada balasan dari AI.";
 
-    resultBox.textContent = `${notice}✅ Hasil Konversi:\n${convertedText}\n\n🧠 GPT-3 Menjelaskan:\n${aiText}`;
+    resultBox.textContent = `${notice}✅ Hasil Konversi:\n${converted}\n\n🧠 GPT-3 Menjelaskan:\n${aiText}`;
     hljs.highlightElement(resultBox);
-    copyBtn.style.display = 'block';
+    copyBtn.style.display = 'inline';
   } catch (err) {
     resultBox.textContent = "❌ Gagal memproses: " + err.message;
     hljs.highlightElement(resultBox);
   } finally {
-    btnText.style.display = 'block';
+    btnText.style.display = 'inline';
     btnLoader.style.display = 'none';
     actionBtn.disabled = false;
   }
