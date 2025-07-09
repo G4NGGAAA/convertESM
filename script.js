@@ -36,6 +36,41 @@ copyBtn.addEventListener('click', () => {
     });
 });
 
+// Enhanced button interactions
+document.addEventListener('DOMContentLoaded', function() {
+  // Add click animations to all buttons
+  const buttons = document.querySelectorAll('button, .social-btn');
+  
+  buttons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      // Add temporary active class
+      this.classList.add('active');
+      setTimeout(() => {
+        this.classList.remove('active');
+      }, 300);
+      
+      // For social buttons, track the click
+      if (this.id === 'whatsappBtn' || this.id === 'channelBtn' || this.id === 'githubBtn') {
+        console.log(`Navigating to ${this.href}`);
+        // You could add analytics here
+      }
+    });
+  });
+
+  // Profile image hover effect
+  const profileImg = document.querySelector('.profile-img');
+  if (profileImg) {
+    profileImg.addEventListener('mouseenter', function() {
+      this.style.transform = 'scale(1.1)';
+      this.style.transition = 'transform 0.3s ease';
+    });
+    
+    profileImg.addEventListener('mouseleave', function() {
+      this.style.transform = 'scale(1)';
+    });
+  }
+});
+
 async function convertAndHelpAI() {
   const url = document.getElementById('urlInput').value.trim();
   const resultBox = document.getElementById("resultBox");
